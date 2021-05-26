@@ -1,5 +1,5 @@
 {
-  "name": "etho-upload-app",
+  "name": "etho-bridge-app",
   "version": "1.0.1",
   "private": false,
   "scripts": {
@@ -11,9 +11,10 @@
     "axios": "^0.21.1",
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",
+    "ethers": "^5.1.4",
+    "firebase": "^8.6.1",
     "jquery": "^3.6.0",
     "vue": "^2.6.11",
-    "vue-google-charts": "^0.3.3",
     "vue-progressbar": "^0.7.5",
     "vuetify": "^2.4.0"
   },
