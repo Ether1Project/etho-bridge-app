@@ -1,4 +1,4 @@
-# vue-upload-test
+etho-bridge-app
 
 ## Project setup
 ```
