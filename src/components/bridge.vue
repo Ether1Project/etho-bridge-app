@@ -60,13 +60,13 @@
           </v-card>
         </v-col>
       </v-row>
-
+      
       <v-row dense align="center" justify="center" v-if="directionIndicatorEthoToEth">
         <v-col cols="4" align="left">
           <v-card  class="px-4 py-2" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ ethoFee }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ ethoMinimum }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ BNStrToNumstr(currentBalance) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ BNStrToNumstr(feeBNStr) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ BNStrToNumstr(minBNStr) }} ETHO </span></p> 
           </v-card>
         </v-col>
 
@@ -75,7 +75,7 @@
 
         <v-col cols="4">
           <v-card  class="px-4 py-8" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ balanceNumStr_TKN }} ETHO </span></p> 
           </v-card>
         </v-col>
       </v-row>
@@ -83,7 +83,7 @@
       <v-row dense align="center" justify="center" v-if="directionIndicatorEthToEtho">
         <v-col cols="4" align="left">
           <v-card  class="px-4 py-8" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p>
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ balanceNumStr_TKN }} ETHO </span></p>
           </v-card>
         </v-col>
 
@@ -92,34 +92,66 @@
 
         <v-col cols="4">
           <v-card  class="px-4 py-2" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ ethoFee }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ ethoMinimum }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ BNStrToNumstr(currentBalance) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ BNStrToNumstr(feeBNStr) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ BNStrToNumstr(minBNStr) }} ETHO </span></p> 
              
           </v-card>
         </v-col>
       </v-row>
 
-      <v-row justify="center" align="center">
+      <v-row justify="center" align="center" v-if="contractInfoOk">
         <v-col cols="8">
           <v-text-field
+            v-model="inputAmount"
             label="Amount"
             @change="updateAmount"
             outlined
             dense
+            required
             class="py-4"
+            :append-icon="lockedEnough && !amountEqual ? 'mdi-restore' : ''"
+                :rules="[
+                  () => amountValid || 'Enter proper amount',
+                  () => amountEnough || amountZero || 'Amount is too low',
+                  () => balanceEnough || amountEqual || 'Balance too low',
+                ]"
           ></v-text-field>
-          <v-card class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthoToEth">
-            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ bridgedWethoAmount }}  Wrapped ETHO </span><img :src='"../assets/images/etho/erc20.jpg"' style="height: 30px; object-fit: contain;" /></p> 
+          <v-card class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthoToEth && amountEnough">
+            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ amountEnough ? '~' + BNStrToNumstr(amountReceivedBNStr) : '...' }}  Wrapped ETHO </span><img :src='"../assets/images/etho/erc20.jpg"' style="height: 30px; object-fit: contain;" /></p> 
           </v-card>
-          <v-card  class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthToEtho">
-            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ bridgedEthoAmount }}  ETHO </span><img :src='"../assets/images/etho/logo.png"' style="margin-left:16px; height: 18px; object-fit: contain;" /></p> 
+          <v-card  class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthToEtho && amountEnough">
+            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ amountEnough ? '~' + BNStrToNumstr(amountReceivedBNStr) : '...' }}  ETHO </span><img :src='"../assets/images/etho/logo.png"' style="margin-left:16px; height: 18px; object-fit: contain;" /></p> 
           </v-card>
         </v-col>
       </v-row>
 
-      <v-alert border="right" color="red lighten-2" dark v-if="true">Could not connect MetaMask. Error: You selected wrong network in MetaMask. Make sure you selected Ethereum Mainnet and refresh the page</v-alert>
-      <v-alert border="right" color="blue-grey" dark v-if="true">Loading Contract Information</v-alert>
+      <v-card class="mt-10 mx-16" width="200">
+          <v-btn text :color="aboutToNullify ? 'warning' : 'success'" large :loading="loading_request" :disabled="requestDisabled" @click="handleClickRequest">
+            {{ aboutToNullify ? 'Take Back' : 'Request Swap' }}
+          </v-btn>
+      </v-card>
+
+      <v-row justify="center" align="center" class="mt-8">
+        <v-alert border="right" color="red lighten-2" dark v-if="!!warningMessage">{{ warningMessage }}</v-alert>
+        <v-alert border="right" color="yellow lighten-2" dark v-if="!!hintMessage">{{ hintMessage }}</v-alert>
+        <v-alert border="right" color="blue-grey" v-if="inBetween">Swap initiated. Sending request to bridge controller. This may take several minutes to complete.</v-alert>
+        <v-alert border="right" color="blue-grey" v-if="!!successMessage">{{ successMessage }}</v-alert>
+
+        <v-alert border="right" color="blue-grey" dark v-if="loading_controllerInfo">Loading Contract Information</v-alert>
+        <v-alert border="right" color="blue-grey" dark v-if="!!hashes">Transaction hashes:
+          <br />
+          Collect (ETHO Network):
+          <a :href="`https://explorer.ether1.org/tx/${hashes.txHashCollect}`" target="_blank" rel="noopener noreferrer">
+            {{ hashes.txHashCollect }}
+          </a>
+          <br />
+          Dispense (ETH Network):
+          <a :href="`https://etherscan.io/tx/${hashes.txHashDispense}`" target="_blank" rel="noopener noreferrer">
+            {{ hashes.txHashDispense }}
+          </a>
+        </v-alert>
+      </v-row>
 
       <v-row dense>
         <v-col>
@@ -189,9 +221,9 @@
       <v-row dense align="center" justify="center" v-if="directionIndicatorEthoToEth">
         <v-col cols="4" align="left">
           <v-card  class="px-4 py-2" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ ethoFee }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ ethoMinimum }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ BNStrToNumstr(currentBalance) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ BNStrToNumstr(feeBNStr) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ BNStrToNumstr(minBNStr) }} ETHO </span></p> 
           </v-card>
         </v-col>
 
@@ -200,7 +232,7 @@
 
         <v-col cols="4">
           <v-card  class="px-4 py-8" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ balanceNumStr_TKN }} ETHO </span></p> 
           </v-card>
         </v-col>
       </v-row>
@@ -208,7 +240,7 @@
       <v-row dense align="center" justify="center" v-if="directionIndicatorEthToEtho">
         <v-col cols="4" align="left">
           <v-card  class="px-4 py-8" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p>
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ balanceNumStr_TKN }} ETHO </span></p>
           </v-card>
         </v-col>
 
@@ -217,34 +249,67 @@
 
         <v-col cols="4">
           <v-card  class="px-4 py-2" align="center" justify="center" height="90">
-            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ ethoBalance }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ ethoFee }} ETHO </span></p> 
-            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ ethoMinimum }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Balance:  <span class="font-weight-black">{{ BNStrToNumstr(currentBalance) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Fee:  <span class="font-weight-black">{{ BNStrToNumstr(feeBNStr) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 12px; margin:2px;">Minimum:  <span class="font-weight-black">{{ BNStrToNumstr(minBNStr) }} ETHO </span></p> 
              
           </v-card>
         </v-col>
       </v-row>
 
-      <v-row justify="center" align="center">
+      <v-row justify="center" align="center" v-if="contractInfoOk">
         <v-col cols="8">
           <v-text-field
+            v-model="inputAmount"
             label="Amount"
             @change="updateAmount"
             outlined
             dense
+            required
             class="py-4"
+            :append-icon="lockedEnough && !amountEqual ? 'mdi-restore' : ''"
+                :rules="[
+                  () => amountValid || 'Enter proper amount',
+                  () => amountEnough || amountZero || 'Amount is too low',
+                  () => balanceEnough || amountEqual || 'Balance too low',
+                ]"
           ></v-text-field>
-          <v-card class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthoToEth">
-            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ bridgedWethoAmount }}  Wrapped ETHO </span><img :src='"../assets/images/etho/bsc.png"' style="margin-left:8px; height: 14px; object-fit: contain;" /></p> 
+          <v-card class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthoToEth && amountEnough">
+            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ amountEnough ? '~' + BNStrToNumstr(amountReceivedBNStr) : '...' }}  Wrapped ETHO </span><img :src='"../assets/images/etho/bsc.png"' style="margin-left:8px; height: 14px; object-fit: contain;" /></p> 
           </v-card>
-          <v-card  class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthToEtho">
-            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ bridgedEthoAmount }}  ETHO </span><img :src='"../assets/images/etho/logo.png"' style="margin-left:16px; height: 18px; object-fit: contain;" /></p> 
+          <v-card  class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthToEtho && amountEnough">
+            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ amountEnough ? '~' + BNStrToNumstr(amountReceivedBNStr) : '...' }}  ETHO </span><img :src='"../assets/images/etho/logo.png"' style="margin-left:16px; height: 18px; object-fit: contain;" /></p> 
           </v-card>
         </v-col>
       </v-row>
 
-      <v-alert border="right" color="red lighten-2" dark v-if="true">Could not connect MetaMask. Error: You selected wrong network in MetaMask. Make sure you selected Ethereum Mainnet and refresh the page</v-alert>
-      <v-alert border="right" color="blue-grey" dark v-if="true">Loading Contract Information</v-alert>
+      <v-card class="mt-10 mx-16" width="200">
+          <v-btn text :color="aboutToNullify ? 'warning' : 'success'" large :loading="loading_request" :disabled="requestDisabled" @click="handleClickRequest">
+            {{ aboutToNullify ? 'Take Back' : 'Request Swap' }}
+          </v-btn>
+      </v-card>
+
+      <v-row justify="center" align="center" class="mt-8">
+        <v-alert border="right" color="red lighten-2" dark v-if="!!warningMessage">{{ warningMessage }}</v-alert>
+        <v-alert border="right" color="yellow lighten-2" dark v-if="!!hintMessage">{{ hintMessage }}</v-alert>
+        <v-alert border="right" color="blue-grey" v-if="inBetween">Swap initiated. Sending request to bridge controller. This may take several minutes to complete.</v-alert>
+        <v-alert border="right" color="blue-grey" v-if="!!successMessage">{{ successMessage }}</v-alert>
+
+        <v-alert border="right" color="blue-grey" dark v-if="loading_controllerInfo">Loading Contract Information</v-alert>
+        <v-alert border="right" color="blue-grey" dark v-if="!!hashes">Transaction hashes:
+          <br />
+          Collect (ETHO Network):
+          <a :href="`https://explorer.ether1.org/tx/${hashes.txHashCollect}`" target="_blank" rel="noopener noreferrer">
+            {{ hashes.txHashCollect }}
+          </a>
+          <br />
+          Dispense (BSC Network):
+          <a :href="`https://bscscan.com/tx/${hashes.txHashDispense}`" target="_blank" rel="noopener noreferrer">
+            {{ hashes.txHashDispense }}
+          </a>
+        </v-alert>
+      </v-row>
+
 
       <v-row dense>
         <v-col>
