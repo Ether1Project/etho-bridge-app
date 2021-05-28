@@ -651,7 +651,7 @@ export default {
       } else if(this.directionIndicatorEthToEtho) {
         try {
           if ((this.approvedNonZero && !this.amountEqual) || !this.approvedNonZero) await this.approve()
-            await this.requestEO()
+            await this.requestOE()
             this.inputAmount = ''
         } catch (error) {
           this.hintMessage = error.message
@@ -736,10 +736,12 @@ export default {
       if(this.directionIndicatorEthoToEth) {
         try {
           const BAO = new Contract(address_BAO, BridgeAssistO.abi, this.signer)
-          const res = await Promise.all([BAO.entryOf(this.wallet), this.signer.getBalance()])
-          this.currentLocked = res[0].toString()
-          this.currentBalance = res[1].toString()
-          if (res[1].lt(this.minBNStr) && !this.entryExists) this.warningMessage = 'Your balance is lower than minimum amount. Usage is blocked'
+          var lockedAmount = await BAO.entryOf(this.wallet);
+          var thisBalance = await this.signer.getBalance();
+          //const res = await Promise.all([BAO.entryOf(this.wallet), this.signer.getBalance()])
+          this.currentLocked = lockedAmount.toString()
+          this.currentBalance = thisBalance.toString()
+          if (thisBalance.lt(this.minBNStr) && !this.entryExists) this.warningMessage = 'Your balance is lower than minimum amount. Usage is blocked'
           else if (this.entryExists && !this.lockedEnough) {
             this.hintMessage = 'The locked amount is lower than minimum amount. You need to erase entry and write it again'
           }
@@ -752,9 +754,15 @@ export default {
       else if(this.directionIndicatorEthToEtho) {
         try {
           const TKN = new Contract(address_TKN, Token.abi, this.signer)
-          const res = await Promise.all([TKN.allowance(this.wallet, address_BA), TKN.balanceOf(this.wallet)])
-          this.currentApproved = res[0].toString()
-          this.currentBalance = res[1].toString()
+          console.log("This Wallet: " + this.wallet);
+          var approvedAmount = await TKN.allowance(this.wallet, address_BA);
+          var balanceAmount = await TKN.balanceOf(this.wallet);
+          //const res = await Promise.all([TKN.allowance(this.wallet, address_BA), TKN.balanceOf(this.wallet)])
+          //console.log(res0);
+          this.currentApproved = approvedAmount.toString()
+          console.log(this.currentApproved);
+          this.currentBalance = balanceAmount.toString()
+          console.log(this.currentBalance);
           if (BigNumber.from(this.currentBalance).lt(this.minBNStr)) this.warningMessage = 'Your balance is lower than minimum amount. Usage is blocked'
             await this.loadEther1Balance()
         } catch (error) {
