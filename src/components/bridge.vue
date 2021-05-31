@@ -387,7 +387,7 @@ const address_TKN = '0x99676c9fa4c77848aeb2383fcfbd7e980dc25027'
 const address_BA = '0x22CcD028d21D3A3e64646493a223b20cB22C6dF0'
 const providerO = new providers.JsonRpcProvider('https://rpc.ether1.org')
 
-const provider_MAINNET = new providers.InfuraProvider(1, 'bd9a66af45444f52844ef4f2b294730b')
+const provider_MAINNET = new providers.InfuraProvider(1, '36aca5d4749c4d0fb9352bb93c435b02')
 const TKN = new Contract(address_TKN, Token.abi, provider_MAINNET)
 
 function removeTrailingZeros(str) {
