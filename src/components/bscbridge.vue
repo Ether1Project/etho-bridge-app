@@ -1,36 +1,176 @@
 <template >
-  <div class="container">
-        <div class="row">
-          <div class="col-sm-12">
-            <h2 class="title my-16"><span>The Etho Protocol</span> Blockchain Bridge</h2>
-  <v-card
-    max-width="600"
-    class="my-16 px-4 py-10"
-  >
-    <v-tabs
-      background-color="#840032"
-      center-active
-      dark
-      class="pb-3"
-    >
-      <v-tab @click="showEthBridge=true, showBscBridge=false">ETH</v-tab>
-      <v-tab @click="showEthBridge=false, showBscBridge=true">BSC</v-tab>
+    <v-container fluid>
+      <v-row dense align="center" justify="center">
+        <v-col>
+          <v-card height="180" align="center" justify="center">
+            <v-card-actions>
+              <v-row dense  align="center" justify="center">
+              <div class="d-none d-md-block justify-content-center ">
+                <img :src='"../assets/images/etho/logo-only.svg"' style="height: 100px; object-fit: contain;" />
+                <p class="custom-transform-class text-none">ETHO<br>
+                <span class="custom-transform-class text-none" style="font-size: 10px;">Etho Protocol Network</span></p>
+              </div>
+            </v-row>
+            </v-card-actions>
+          </v-card>
+        </v-col>
 
-      
+        <v-col align="center" justify="center">
+          <v-card class="mx-16 py-0">
+          <v-btn v-if="directionIndicatorEthoToEth" @click="changeEthDirection" icon>
+            <v-icon>mdi-arrow-right-bold</v-icon>
+          </v-btn>
 
-    </v-tabs>
-    <EthBridge v-if="showEthBridge"></EthBridge>
-    <BscBridge v-if="showBscBridge"></BscBridge>
-  </v-card>
-  </div>
-  </div>
-  </div>
+          <v-btn v-if="directionIndicatorEthToEtho" @click="changeEthDirection" icon>
+            <v-icon>mdi-arrow-left-bold</v-icon>
+          </v-btn>
+          </v-card>
+          <p class="custom-transform-class text-none" style="font-size: 10px;">Swap Direction</p>
+        </v-col>
+
+        <v-col>
+          <v-card height="180" align="center" justify="center">
+            <v-card-actions>
+              <v-row dense  align="center" justify="center">
+              <div class="d-none d-md-block justify-content-center "  align="center" justify="center">
+                <img :src='"../assets/images/etho/bsclogo.png"' style="height: 100px; object-fit: contain;" />
+                <p class="custom-transform-class text-none">Wrapped ETHO<br>
+                <span class="custom-transform-class text-none" style="font-size: 10px;">Binance Smart Chain</span></p>
+              </div>
+            </v-row>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <v-row dense align="center" justify="center" v-if="directionIndicatorEthoToEth">
+        <v-col cols="4" align="left">
+          <v-card  class="px-4 py-2" align="center" justify="center" height="80">
+            <p class="text-left" style="font-size: 10px; margin:2px;">Balance:  <span class="font-weight-black">{{ BNStrToNumstr(currentBalance) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 10px; margin:2px;">Fee:  <span class="font-weight-black">{{ BNStrToNumstr(feeBNStr) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 10px; margin:2px;">Minimum:  <span class="font-weight-black">{{ BNStrToNumstr(minBNStr) }} ETHO </span></p> 
+          </v-card>
+        </v-col>
+
+        <v-col cols="4" align="left">
+        </v-col>
+
+        <v-col cols="4">
+          <v-card  class="px-4 py-8" align="center" justify="center" height="80">
+            <p class="text-left" style="font-size: 10px; margin:2px;">Balance:  <span class="font-weight-black">{{ balanceNumStr_TKN }} ETHO </span></p> 
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <v-row dense align="center" justify="center" v-if="directionIndicatorEthToEtho">
+        <v-col cols="4" align="left">
+          <v-card  class="px-4 py-8" align="center" justify="center" height="80">
+            <p class="text-left" style="font-size: 10px; margin:2px;">Balance:  <span class="font-weight-black">{{ balanceNumStr_Ether1 }} ETHO </span></p>
+          </v-card>
+        </v-col>
+
+        <v-col cols="4" align="left">
+        </v-col>
+
+        <v-col cols="4">
+          <v-card  class="px-4 py-2" align="center" justify="center" height="80">
+            <p class="text-left" style="font-size: 10px; margin:2px;">Balance:  <span class="font-weight-black">{{ BNStrToNumstr(currentBalance) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 10px; margin:2px;">Fee:  <span class="font-weight-black">{{ BNStrToNumstr(feeBNStr) }} ETHO </span></p> 
+            <p class="text-left" style="font-size: 10px; margin:2px;">Minimum:  <span class="font-weight-black">{{ BNStrToNumstr(minBNStr) }} ETHO </span></p> 
+             
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <v-row justify="center" align="center" v-if="contractInfoOk">
+        <v-col cols="8">
+          <v-text-field
+            v-if="directionIndicatorEthoToEth"
+            v-model="inputAmount"
+            label="Amount"
+            outlined
+            dense
+            required
+            class="py-4"
+            @click:append="restoreInputAmount"
+                :rules="[
+                  () => amountValid || 'Enter proper amount',
+                  () => amountEnough || amountZero || 'Amount is too low',
+                  () => balanceEnough || amountEqual || 'Balance too low',
+                ]"
+          ></v-text-field>
+          <v-text-field
+            v-if="directionIndicatorEthToEtho"
+            v-model="inputAmount"
+            label="Amount"
+            outlined
+            dense
+            required
+            @click:append="handleClickAppend"
+            class="py-4"
+            :rules="[() => amountValid || 'Enter proper amount', () => amountEnough || 'Amount is too low', () => balanceEnough || 'Balance too low']"
+          ></v-text-field>
+          <v-card class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthoToEth && amountEnough">
+            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ amountEnough ? '~' + BNStrToNumstr(amountReceivedBNStr) : '...' }}  Wrapped ETHO </span><img :src='"../assets/images/etho/bsc.png"' style="margin-left:8px; height: 14px; object-fit: contain;" /></p>
+          </v-card>
+          <v-card  class="mb-8" height="40" align="center" justify="center" v-if="directionIndicatorEthToEtho && amountEnough">
+            <p class="text-center py-2" style="font-size: 12px;">You will receive:  <span class="font-weight-black">{{ amountEnough ? '~' + BNStrToNumstr(amountReceivedBNStr) : '...' }}  ETHO </span><img :src='"../assets/images/etho/logo.png"' style="margin-left:16px; height: 18px; object-fit: contain;" /></p> 
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <v-card class="mt-10 mx-16" width="200">
+          <v-btn text :color="aboutToNullify ? 'warning' : 'success'" large :loading="loading_request" :disabled="requestDisabled" @click="handleClickRequest">
+            {{ aboutToNullify ? 'Take Back' : 'Request Swap' }}
+          </v-btn>
+      </v-card>
+
+      <v-row justify="center" align="center" class="mt-8">
+        <v-alert border="right" color="red lighten-2" dark v-if="!!warningMessage"><p class="text-center" style="color:white; font-size: 12px;">{{ warningMessage }}</p></v-alert>
+        <v-alert border="right" color="yellow lighten-2" dark v-if="!!hintMessage"><p class="text-center" style="color:white; font-size: 12px;">{{ hintMessage }}</p></v-alert>
+        <v-alert border="right" color="blue-grey" dark v-if="inBetween"><p class="text-center" style="color:white; font-size: 12px;">Swap initiated. Sending request to bridge controller. This may take several minutes to complete.</p></v-alert>
+        <v-alert border="right" color="blue-grey" dark v-if="!!successMessage"><p class="text-center" style="color:white; font-size: 12px;">{{ successMessage }}</p></v-alert>
+
+        <v-alert border="right" color="blue-grey" dark v-if="loading_controllerInfo"><p class="text-center" style="color:white; font-size: 12px;">Loading Contract Information</p></v-alert>
+        <v-alert border="right" color="blue-grey" dark v-if="!!hashes"><p class="text-center" style="color:white; font-size: 12px;">Transaction hashes:
+          <br />
+          Collect (ETHO Network):
+          <a style="color:black;" :href="`https://explorer.ether1.org/tx/${hashes.txHashCollect}`" target="_blank" rel="noopener noreferrer">
+            {{ hashes.txHashCollect }}
+          </a>
+          <br />
+          Dispense (BSC Network):
+          <a style="color:black;" :href="`https://bscscan.com/tx/${hashes.txHashDispense}`" target="_blank" rel="noopener noreferrer">
+            {{ hashes.txHashDispense }}
+          </a></p>
+        </v-alert>
+      </v-row>
+
+      <v-row dense>
+        <v-col>
+          <v-card>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+
+              <v-btn icon class="px-14" href="https://pancakeswap.info/token/0x0e900aa6ed4244c43d597e6d2f8fb3994303ed99" target="_blank">
+                <img :src='"../assets/images/etho/pancakeswap.png"' style="margin-left:16px; height: 18px; object-fit: contain;" />
+              </v-btn>
+
+              <v-btn icon class="px-14" href="https://bscscan.com/token/0x0e900aa6ed4244c43d597e6d2f8fb3994303ed99" target="_blank">
+                <img :src='"../assets/images/etho/bscscan.svg"' style="margin-left:16px; height: 18px; object-fit: contain;" />
+              </v-btn>
+
+   
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+
 </template>
 <script>
 /* eslint-disable camelcase */
 //import Vue from 'vue'
-import EthBridge from "./ethbridge";
-import BscBridge from "./bscbridge";
 import { Contract, providers, BigNumber } from 'ethers'
 import Axios from 'axios'
 import firebase from 'firebase/app'
@@ -39,21 +179,21 @@ import BridgeAssistO from '/abis/BridgeAssistO.json'
 import Token from '/abis/Token.json'
 if (!firebase.apps.length)
   firebase.initializeApp({
-    apiKey: 'AIzaSyCNsZTX7t6dxYlPSbw3AA_0M08C8wXxgwk',
-    authDomain: 'ethobridge.firebaseapp.com',
-    projectId: 'ethobridge',
-    storageBucket: 'ethobridge.appspot.com',
-    messagingSenderId: '299191786261',
-    appId: '1:299191786261:web:41643af0eb7df59a8ba71c',
+    apiKey: 'AIzaSyB45_4vLMRKDdC4u1qluB-R225ZrOHSW8A',
+    authDomain: 'ethobridge-bsc.firebaseapp.com',
+    projectId: 'ethobridge-bsc',
+    storageBucket: 'ethobridge-bsc.appspot.com',
+    messagingSenderId: '237758082117',
+    appId: '1:237758082117:web:2dc86d2b8a0a471e2fc72c',
   })
 const db = firebase.firestore()
-const address_BAO = '0x2edFef4716612b705993C73e69728bEB6E28c57F'
-const address_TKN = '0x99676c9fa4c77848aeb2383fcfbd7e980dc25027'
+const address_TKN = '0x0E900AA6ed4244c43d597E6d2F8Fb3994303ED99'
+const address_BA = '0x475c3902842330A51191AcC6bc10FdbC8AEFe136'
+const address_BAO = '0x1f83d695924803c2461C664F5e49a88b679577f3'
 
-const address_BA = '0x22CcD028d21D3A3e64646493a223b20cB22C6dF0'
 const providerO = new providers.JsonRpcProvider('https://rpc.ether1.org')
 
-const provider_MAINNET = new providers.InfuraProvider(1, '36aca5d4749c4d0fb9352bb93c435b02')
+const provider_MAINNET = new providers.JsonRpcProvider('https://bsc-dataseed.binance.org/')
 const TKN = new Contract(address_TKN, Token.abi, provider_MAINNET)
 
 function removeTrailingZeros(str) {
@@ -76,11 +216,7 @@ function BNStrToNumstr(str, precision = 3) {
 
 
 export default {
-  name: "Bridge",
-  components: {
-    EthBridge,
-    BscBridge,
-  },
+  name: "BscBridge",
   data() {
     return {
       showEthBridge: true,
@@ -291,8 +427,8 @@ export default {
           if ((await this.provider.getNetwork()).chainId !== 1313114)
             throw new Error('You selected wrong network in MetaMask. Make sure you imported and selected Etho Protocol network and refresh the page')
         } else if (this.directionIndicatorEthToEtho) {
-          if ((await this.provider.getNetwork()).chainId !== 1)
-          throw new Error('You selected wrong network in MetaMask. Make sure you selected Ethereum Mainnet and refresh the page')
+          if ((await this.provider.getNetwork()).chainId !== 56)
+          throw new Error('You selected wrong network in MetaMask. Make sure you selected Binance Smart Chain network and refresh the page')
         }
         this.signer = this.provider.getSigner()
         this.wallet = await this.signer.getAddress()
@@ -366,7 +502,7 @@ export default {
     async requestOE() {
       if(this.directionIndicatorEthoToEth) {
         try {
-          this.hashes = (await Axios.get(`https://ethobridge.uc.r.appspot.com/ETHOtoWETHO/${this.wallet}`)).data
+          this.hashes = (await Axios.get(`https://ethobridge-bsc.uc.r.appspot.com/ETHOtoWETHO/${this.wallet}`)).data
           console.log(this.hashes)
         } catch (error) {
           console.error({ ...error })
@@ -376,7 +512,7 @@ export default {
         this.successMessage = 'Success! Save transaction hashes below'
       } else if (this.directionIndicatorEthToEtho) {
         try {
-          this.hashes = (await Axios.get(`https://ethobridge.uc.r.appspot.com/WETHOtoETHO/${this.wallet}`)).data
+          this.hashes = (await Axios.get(`https://ethobridge-bsc.uc.r.appspot.com/WETHOtoETHO/${this.wallet}`)).data
           console.log(this.hashes)
         } catch (error) {
           console.error({ ...error })
@@ -391,7 +527,7 @@ export default {
         this.paramsInfo = ((await db.collection('config').doc('changeables').get()).data()) || null
         if (!this.paramsInfo) throw new Error('Received invalid data from firestore')
         try {
-          this.costsInfo = (await Axios.get('https://ethobridge.uc.r.appspot.com/info/costs')).data
+          this.costsInfo = (await Axios.get('https://ethobridge-bsc.uc.r.appspot.com/info/costs')).data
         } catch (error) {
           throw error.response?.data || error.message
         }
